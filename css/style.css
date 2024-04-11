@@ -1,0 +1,80 @@
+html,body {
+    margin: 0;
+    padding: 0;
+}
+  
+body {
+    padding-top: 1em;
+    text-align: center;
+    background-color: black;
+    /* background-image: url('../img/dungeonhell.png'); */
+    background-size: cover;
+    background-repeat: space;
+}
+
+canvas {
+    /* background-image: url('../img/stone.png'); */
+    /* background-repeat: repeat; */
+    background-color: #bd5d14;
+    width: 100%;
+    max-height: 36vh;
+    object-fit: contain;
+}
+
+#container {
+    width: 70em;
+    height: 42vh;
+    background-color: darkred;
+    margin: 0 auto;
+    padding: 1em;
+    display: grid;
+    grid-gap: 1em;
+    grid-template-columns: .1fr .8fr .1fr;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas: "left-control top-bar score-tab"
+                          "left-control game game"
+                          "cash-tab game game";
+}
+
+#top-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#left-control {
+    background-color: #222;
+    grid-area: left-control;
+}
+
+#top-bar {
+    background-color: white;
+    grid-area: top-bar;
+}
+
+main {
+    grid-area: game;
+}
+
+#score-tab {
+    background-color: white;
+    grid-area: score-tab;
+}
+
+#cash-tab {
+    background-color: white;
+    grid-area: cash-tab;
+}
+
+.buy-button {
+    margin-left: 25px;
+    width: 75px;
+    height: 25px;
+    background-color: rgb(111, 12, 31);
+    margin-right: 25px;
+    margin-top: 70px;
+    margin-bottom: 25px;
+}
+
+
+
