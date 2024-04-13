@@ -41,15 +41,44 @@ class Crawler {
         this.height = height;
         this.width = width;
         this.alive = true;
+        this.tripN;
+        this.tripS;
+        this.tripNId;
+        this.tripSId;
     
         this.render = function () {
           ctx.strokeStyle = this.color; // change the color of the context (ctx)
           ctx.strokeRect(this.x, this.y, this.width, this.height);
         };
     }
+
+//TODO: rethink trip wire methods
+    buildTurret() {
+        fillRect(x + 1, y + 1, width - 2, height - 2);
+        //draw tripwires
+        tripN = ctx.beginPath();
+        ctx.moveTo(x + width / 2, y);
+        ctx.lineTo(x + width / 2, y - height);
+        ctx.strokeStyle = 'red';
+        ctx.stroke();
+
+        tripS = ctx.beginPath();
+        ctx.moveTo(x + width / 2, y + height);
+        ctx.lineTo(x + width / 2, y + height * 2);
+        ctx.strokeStyle = 'red';
+        ctx.stroke();
+    };
+
+    clearTurret() {
+        clearRect(x + 1, y + 1, width - 2, height - 2);
+        tripNId = tripN.id;
+        tripSId = tripS.id;
+        ctx.delete(tripNId);
+        ctx.delete(tripSId);
+    }
   }
 
-let testCrawler = new Crawler(20, 170, 'blue', 20, 100);
+let testCrawler = new Crawler(20, 185, 'blue', 20, 70);
 testCrawler.render();
 
 let testTurret1 = new Turret(100, 54, 'yellow', 40, 40);
@@ -61,7 +90,23 @@ testTurret2.render();
 let testTurret3 = new Turret(100, 348, 'yellow', 40, 40);
 testTurret3.render();
 
-  console.log(game.height);
+//drawing tripwire
+//north tripwire of T1
+ctx.beginPath();
+ctx.moveTo(120, 54);
+ctx.lineTo(120, 0);
+ctx.strokeStyle = 'red';
+ctx.stroke();
+
+//south trip of T1
+ctx.beginPath();
+ctx.moveTo(120, 94);
+ctx.lineTo(120, 144);
+ctx.strokeStyle = 'red';
+ctx.stroke();
+
+console.log(game.height);
+console.log(game.width);
 
   //====== EVENT LISTENER ======
 window.addEventListener('DOMContentLoaded', function() {
@@ -71,7 +116,7 @@ window.addEventListener('DOMContentLoaded', function() {
     /* const runGame = this.setInterval(gameLoop, 60); */
 });
 
-//====== COORDINATE FUNCTION ======
+//====== COORDINATE FUNCTION ***TESTING ONLY*** ======
 function getCursorPosition(canvas, event) {
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -79,6 +124,6 @@ function getCursorPosition(canvas, event) {
     console.log("x: " + x + " y: " + y);
 }
 
-canvas.addEventListener('mousedown', function(e) {
+game.addEventListener('mousedown', function(e) {
     getCursorPosition(game, e);
 });
