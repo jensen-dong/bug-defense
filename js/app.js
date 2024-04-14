@@ -9,6 +9,9 @@ const input = {
     s: {
         down: false
     },
+    o: {
+        down: false
+    }
 }
 const turretBtn1 = document.getElementById('buy-turret-1');
 const turretBtn2 = document.getElementById('buy-turret-2');
@@ -40,7 +43,15 @@ class Sprite {
         ctx.fillStyle = 'red';
         ctx.fillRect(this.position.x, this.position.y, 50, this.height);
 
-        ctx.fillRect(this.attackPosition.x, this.attackPosition.y)
+        ctx.fillStyle = 'orange';
+        ctx.fillRect(
+            this.attackPosition.position.x,
+            this.attackPosition.position.y,
+            this.attackPosition.width,
+            this.attackPosition.height
+        )
+
+        
     }
 
     update() {
@@ -50,6 +61,32 @@ class Sprite {
 
         if (this.position.y + this.height + this.velocity.y >= game.height) {
             this.velocity.y = 0;
+        }
+    }
+}
+
+class Fireball {
+    constructor({position, velocity}) {
+        this.position = position;
+        this.velocity = velocity;
+    }
+
+    draw() {
+        ctx.fillStyle = 'cyan';
+        ctx.fillRect(
+            this.position.x + 80,
+            this.position.y + 20,
+            20,5
+        )
+    }
+
+    update() {
+        this.draw();
+        this.position.x += this.velocity.x;
+        this.position.y += this.velocity.y;
+
+        if (this.position.x + this.width + this.velocity.x >= game.width) {
+            this.velocity.x = 0;
         }
     }
 }
@@ -78,6 +115,17 @@ const bug = new Sprite({
     }
 });
 
+const fireball = new Fireball({
+    position: {
+        x: 80,
+        y: 302
+    },
+    velocity: {
+        x: 10,
+        y: 0
+    }
+})
+
 
 //====== create animation function ======
 
@@ -95,6 +143,9 @@ function animate() {
         player.velocity.y = -3;
     } else if (input.s.down) {
         player.velocity.y = 3;
+    }
+    if (input.o.down) {
+        fireball.update();
     }
 }
 
@@ -116,6 +167,9 @@ window.addEventListener('keydown', (event) => {
             break;
         case 's':
             input.s.down = true;
+            break;
+        case 'o':
+            input.o.down = true;
             break;
     }
 });
