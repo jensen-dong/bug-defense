@@ -9,10 +9,14 @@ const input = {
     s: {
         down: false
     },
-    o: {
+    a: {
+        down: false
+    },
+    d: {
         down: false
     }
 }
+let prevKey;
 const turretBtn1 = document.getElementById('buy-turret-1');
 const turretBtn2 = document.getElementById('buy-turret-2');
 const turretBtn3 = document.getElementById('buy-turret-3');
@@ -28,30 +32,42 @@ ctx.drawImage(bgi, 0, 0);
 
 //====== CRAWLER CLASS ======
 class Sprite {
-    constructor({position, velocity}) {
-      this.position = position;
-      this.velocity = velocity;
-      this.height = 150;
-      this.attackPosition = {
-        position: this.position,
-        width: 100,
-        height: 50,
-      }
+    constructor({ position, velocity }) {
+        this.position = position;
+        this.velocity = velocity;
+        this.height = 150;
+        this.width = 50;
+        /* this.headHeight = {
+          x: this.position.x + this.width / 2,
+          y: this.position.y + 20
+        } */
+
+        this.attackPosition = {
+            position: this.position,
+            width: 100,
+            height: 50,
+        }
+        this.color = 'orange';
+        this.isPlayer = true;
+        this.attacking;
     }
 
     draw() {
         ctx.fillStyle = 'red';
-        ctx.fillRect(this.position.x, this.position.y, 50, this.height);
+        ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
 
-        ctx.fillStyle = 'orange';
-        ctx.fillRect(
-            this.attackPosition.position.x,
-            this.attackPosition.position.y,
-            this.attackPosition.width,
-            this.attackPosition.height
-        )
+        //attack position
+        if (this.isPlayer) {
+            ctx.fillStyle = this.color;
+            ctx.fillRect(
+                this.attackPosition.position.x,
+                this.attackPosition.position.y,
+                this.attackPosition.width,
+                this.attackPosition.height
+            )
+        }
 
-        
+
     }
 
     update() {
@@ -63,38 +79,40 @@ class Sprite {
             this.velocity.y = 0;
         }
     }
+
+    attack() {
+        this.attacking = true;
+        setTimeout(() => {
+            this.attacking = false
+        }, 100)
+    }
 }
 
-class Fireball {
-    constructor({position, velocity}) {
+
+
+/* class Fireball {
+    constructor(position){
         this.position = position;
-        this.velocity = velocity;
-    }
-
-    draw() {
-        ctx.fillStyle = 'cyan';
+        this.width = 20;
+        this.height = 5;
+        this.speed = 10
+      }
+      render() {
+        ctx.fillStyle = 'orange';
         ctx.fillRect(
-            this.position.x + 80,
-            this.position.y + 20,
-            20,5
+            this.position.x + this.speed, 
+            this.position.y, 
+            this.width,
+            this.height,
         )
-    }
-
-    update() {
-        this.draw();
-        this.position.x += this.velocity.x;
-        this.position.y += this.velocity.y;
-
-        if (this.position.x + this.width + this.velocity.x >= game.width) {
-            this.velocity.x = 0;
-        }
-    }
-}
+      }
+    
+} */
 
 const player = new Sprite({
     position: {
-    x: 40,
-    y: 300
+        x: 40,
+        y: 300
     },
     velocity: {
         x: 0,
@@ -106,25 +124,16 @@ const player = new Sprite({
 
 const bug = new Sprite({
     position: {
-    x: 1000,
-    y: 300
+        x: 500,
+        y: 300
     },
     velocity: {
         x: 0,
         y: 0
-    }
+    },
 });
 
-const fireball = new Fireball({
-    position: {
-        x: 80,
-        y: 302
-    },
-    velocity: {
-        x: 10,
-        y: 0
-    }
-})
+
 
 
 //====== create animation function ======
@@ -138,38 +147,57 @@ function animate() {
     bug.update();
 
     player.velocity.y = 0;
-
-    if (input.w.down) {
+    player.velocity.x = 0;
+    bug.isPlayer = false;
+    //bug.velocity.x = -1;
+    //movement
+    if (input.w.down && prevKey === 'w') {
         player.velocity.y = -3;
-    } else if (input.s.down) {
+    } else if (input.s.down && prevKey === 's') {
         player.velocity.y = 3;
+    } else if (input.a.down && prevKey === 'a') {
+        player.velocity.x = -3;
+    } else if (input.d.down && prevKey === 'd') {
+        player.velocity.x = 3;
     }
-    if (input.o.down) {
-        fireball.update();
+
+    //hit detection
+    if (player.attackPosition.position.x + player.attackPosition.width >= bug.position.x 
+        && player.attackPosition.position.x <= bug.position.x + bug.width
+        && player.attackPosition.position.y + player.attackPosition.height >= bug.position.y
+        && player.attackPosition.position.y <= bug.position.y + bug.height
+        && player.attacking
+        ) {
+        console.log('hit');
     }
 }
+
 
 animate();
 
 //====== EVENT LISTENER ======
-window.addEventListener('DOMContentLoaded', function() {
-
-    /* donkey = new Crawler(10,20,'grey', 20, 20); */
-    //run a game loop
-    /* const runGame = this.setInterval(gameLoop, 60); */
-});
 
 window.addEventListener('keydown', (event) => {
     console.log(event.key);
     switch (event.key) {
         case 'w':
             input.w.down = true;
+            prevKey = 'w';
             break;
         case 's':
             input.s.down = true;
+            prevKey = 's';
             break;
-        case 'o':
-            input.o.down = true;
+        case 'a':
+            input.a.down = true;
+            prevKey = 'a';
+            break;
+        case 'd':
+            input.d.down = true;
+            prevKey = 'd';
+            break;
+        case ' ':
+            player.attack();
             break;
     }
 });
@@ -182,72 +210,15 @@ window.addEventListener('keyup', (event) => {
         case 's':
             input.s.down = false;
             break;
+        case 'a':
+            input.a.down = false;
+            break;
+        case 'd':
+            input.d.down = false;
+            break;
     }
 });
 
-/* class Turret {
-    constructor(x, y, color, width, height) {
-        this.x = x;
-        this.y = y;
-        this.color = color;
-        this.height = height;
-        this.width = width;
-        this.alive = true;
-        this.tripN;
-        this.tripS;
-        this.tripNId;
-        this.tripSId;
-    
-        this.render = function () {
-          ctx.strokeStyle = this.color; // change the color of the context (ctx)
-          ctx.strokeRect(this.x, this.y, this.width, this.height);
-        };
-    }
-} */
-
-/* class Sprite {
-    constructor(position, image, width, height) {
-        this.position = position;
-        this.image = image;
-        this.height = height;
-        this.width = width;
-        this.alive = true;
-
-        this.render = function() {
-            ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
-        }
-    }
-} */
-
-//TODO: rethink trip wire methods
-
-
-/* let testCrawler = new Crawler(20, 185, 'blue', 20, 70);
-testCrawler.render();
-
-let testTurret1 = new Turret(100, 54, 'yellow', 40, 40);
-testTurret1.render();
-
-let testTurret2 = new Turret(100, 201, 'yellow', 40, 40);
-testTurret2.render();
-
-let testTurret3 = new Turret(100, 348, 'yellow', 40, 40);
-testTurret3.render();
-
-//drawing tripwire
-//north tripwire of T1
-ctx.beginPath();
-ctx.moveTo(120, 54);
-ctx.lineTo(120, 0);
-ctx.strokeStyle = 'red';
-ctx.stroke();
-
-//south trip of T1
-ctx.beginPath();
-ctx.moveTo(120, 94);
-ctx.lineTo(120, 144);
-ctx.strokeStyle = 'red';
-ctx.stroke(); */
 
 console.log(game.height);
 console.log(game.width);
@@ -263,6 +234,6 @@ function getCursorPosition(canvas, event) {
     console.log("x: " + x + " y: " + y);
 }
 
-game.addEventListener('mousedown', function(e) {
+game.addEventListener('mousedown', function (e) {
     getCursorPosition(game, e);
 });
