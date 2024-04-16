@@ -17,6 +17,7 @@ const input = {
     }
 }
 let prevKey;
+let bugHit = true;
 const turretBtn1 = document.getElementById('buy-turret-1');
 const turretBtn2 = document.getElementById('buy-turret-2');
 const turretBtn3 = document.getElementById('buy-turret-3');
@@ -37,10 +38,6 @@ class Sprite {
         this.velocity = velocity;
         this.height = 150;
         this.width = 50;
-        /* this.headHeight = {
-          x: this.position.x + this.width / 2,
-          y: this.position.y + 20
-        } */
 
         this.attackPosition = {
             position: this.position,
@@ -50,6 +47,7 @@ class Sprite {
         this.color = 'orange';
         this.isPlayer = true;
         this.attacking;
+        this.isInFront;
     }
 
     draw() {
@@ -57,7 +55,7 @@ class Sprite {
         ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
 
         //attack position
-        if (this.isPlayer) {
+        if (this.isPlayer && this.attacking) {
             ctx.fillStyle = this.color;
             ctx.fillRect(
                 this.attackPosition.position.x,
@@ -86,6 +84,21 @@ class Sprite {
             this.attacking = false
         }, 100)
     }
+
+    pushBack() {
+        if (this.isInFront) {
+            setTimeout(() => {
+                this.velocity.x = -10
+            }, 50)
+        } else if (!this.isInFront) {
+            setTimeout(() => {
+                this.velocity.x = 10
+            }, 50)
+        }
+    }
+
+
+
 }
 
 
@@ -139,6 +152,7 @@ const bug = new Sprite({
 //====== create animation function ======
 
 
+
 function animate() {
     window.requestAnimationFrame(animate);
     ctx.drawImage(bgi, 0, 0);
@@ -168,12 +182,38 @@ function animate() {
         && player.attackPosition.position.y <= bug.position.y + bug.height
         && player.attacking
         ) {
-        console.log('hit');
+            player.attacking = false;
+            console.log('player hit');
     }
+
+    
+
+    if (bug.position.x <= player.position.x + player.width
+        && bug.position.x + bug.width >= player.position.x
+        && bug.position.y + bug.height >= player.position.y
+        && bug.position.y <= player.position.y + player.height) {
+            if(player.position.x <= bug.position.x + bug.width / 2) {
+                player.isInFront = true;
+                player.pushBack();
+            } else if (player.position.x > bug.position.x + bug.width / 2) {
+                player.isInFront = false;
+                player.pushBack();
+            }
+        if (bugHit) {
+            console.log('bug hit');
+            bugHit = false;
+        }
+    } else {
+        bugHit = true;
+    }
+    
 }
 
 
 animate();
+
+//====== Helper functions ======
+
 
 //====== EVENT LISTENER ======
 
