@@ -1,7 +1,7 @@
 // GLOBAL VARIABLES
 const game = document.getElementById('game');
-const score = document.getElementById('score');
-const cash = document.getElementById('cash');
+let score = 0;
+let health = 10;
 const input = {
     w: {
         down: false
@@ -155,7 +155,7 @@ function animate() {
                 y: randomIndex(bugSpawnY)
             },
             velocity: {
-                x: -.5,
+                x: -1,
                 y: 0
             }
         }))
@@ -196,6 +196,8 @@ function animate() {
                 if (bug.hp === 0) {
                     bugArr.splice(bugArr.indexOf(bug), 1);
                     bugKill++;
+                    score++;
+                    document.getElementById('score').innerHTML = score;
                 }
         }
 
@@ -214,6 +216,8 @@ function animate() {
             if (now - lastHitTakenTime > 200) {
                 console.log(bugArr.indexOf(bug), 'bug hit');
                 player.hp -= 1;
+                health--;
+                document.getElementById('health').innerHTML = health;
                 console.log('player health:', player.hp);
                 lastHitTakenTime = now;
             }
