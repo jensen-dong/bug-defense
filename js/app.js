@@ -39,33 +39,14 @@ class Sprite {
         this.height = 150;
         this.width = 50;
 
-        this.attackPosition = {
-            position: this.position,
-            width: 100,
-            height: 50,
-        }
-        this.color = 'orange';
-        this.isPlayer = true;
+        this.color = 'red';
         this.attacking;
         this.isInFront;
     }
 
     draw() {
-        ctx.fillStyle = 'red';
+        ctx.fillStyle = this.color;
         ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
-
-        //attack position
-        if (this.isPlayer && this.attacking) {
-            ctx.fillStyle = this.color;
-            ctx.fillRect(
-                this.attackPosition.position.x,
-                this.attackPosition.position.y,
-                this.attackPosition.width,
-                this.attackPosition.height
-            )
-        }
-
-
     }
 
     update() {
@@ -78,6 +59,35 @@ class Sprite {
         }
     }
 
+    
+}
+
+class Player extends Sprite {
+    constructor(options) {
+        super(options);
+        this.attackPosition = {
+            position: this.position,
+            width: 150,
+            height: 50,
+        }
+        this.attacking;
+        this.isInFront;
+    }
+
+    draw() {
+        super.draw();
+        
+        //attack position
+        if (this.attacking) {
+            ctx.fillStyle = this.color;
+            ctx.fillRect(
+                this.attackPosition.position.x,
+                this.attackPosition.position.y,
+                this.attackPosition.width,
+                this.attackPosition.height
+            )
+        }
+    }
     attack() {
         this.attacking = true;
         setTimeout(() => {
@@ -96,33 +106,18 @@ class Sprite {
             }, 50)
         }
     }
+}
 
-
-
+class Bug extends Sprite {
+    constructor(options) {
+        super(options);
+        this.color = 'green';
+        this.height = 50;
+    }
 }
 
 
-
-/* class Fireball {
-    constructor(position){
-        this.position = position;
-        this.width = 20;
-        this.height = 5;
-        this.speed = 10
-      }
-      render() {
-        ctx.fillStyle = 'orange';
-        ctx.fillRect(
-            this.position.x + this.speed, 
-            this.position.y, 
-            this.width,
-            this.height,
-        )
-      }
-    
-} */
-
-const player = new Sprite({
+const player = new Player({
     position: {
         x: 40,
         y: 300
@@ -135,34 +130,59 @@ const player = new Sprite({
 
 
 
-const bug = new Sprite({
+/* const bug = new Bug({
     position: {
-        x: 500,
+        x: 800,
         y: 300
     },
     velocity: {
         x: 0,
         y: 0
     },
-});
+}); */
 
 
+//====== enemy spawn ======
 
+const bugSpawnY = [275, 325, 375, 425, 475, 525];
+const bugArr = [];
+for (i = 0; i < 10; i++) {
+    
+}
 
 //====== create animation function ======
-
-
+let lastBugSpawn = Date.now();
+let bugCount = 0;
 
 function animate() {
     window.requestAnimationFrame(animate);
     ctx.drawImage(bgi, 0, 0);
     //console.log('move');
+
+    let now = Date.now();
     player.update();
-    bug.update();
+    //bug.update();
+    if (now - lastBugSpawn > 2000 && bugCount < 10) {
+        bugArr.push(new Bug({
+            position: {
+                x: 1000,
+                y: randomIndex(bugSpawnY)
+            },
+            velocity: {
+                x: -1,
+                y: 0
+            }
+        }))
+        lastBugSpawn = now;
+        bugCount++;
+    }
+
+    bugArr.forEach(bug => {
+        bug.update();
+    })
 
     player.velocity.y = 0;
     player.velocity.x = 0;
-    bug.isPlayer = false;
     //bug.velocity.x = -1;
     //movement
     if (input.w.down && prevKey === 'w') {
@@ -176,36 +196,41 @@ function animate() {
     }
 
     //hit detection
-    if (player.attackPosition.position.x + player.attackPosition.width >= bug.position.x 
-        && player.attackPosition.position.x <= bug.position.x + bug.width
-        && player.attackPosition.position.y + player.attackPosition.height >= bug.position.y
-        && player.attackPosition.position.y <= bug.position.y + bug.height
-        && player.attacking
-        ) {
-            player.attacking = false;
-            console.log('player hit');
-    }
+    bugArr.forEach(bug => {
+        if (player.attackPosition.position.x + player.attackPosition.width >= bug.position.x 
+            && player.attackPosition.position.x <= bug.position.x + bug.width
+            && player.attackPosition.position.y + player.attackPosition.height >= bug.position.y
+            && player.attackPosition.position.y <= bug.position.y + bug.height
+            && player.attacking
+            ) {
+                player.attacking = false;
+                console.log('player hit', bugArr.indexOf(bug));
+        }
+
+        //push back detection
+        if (bug.position.x <= player.position.x + player.width
+            && bug.position.x + bug.width >= player.position.x
+            && bug.position.y + bug.height >= player.position.y
+            && bug.position.y <= player.position.y + player.height) {
+                if(player.position.x <= bug.position.x + bug.width / 2) {
+                    player.isInFront = true;
+                    player.pushBack();
+                } else if (player.position.x > bug.position.x + bug.width / 2) {
+                    player.isInFront = false;
+                    player.pushBack();
+                }
+            if (bugHit) {
+                console.log('bug hit');
+                bugHit = false;
+            }
+        } else {
+            bugHit = true;
+        }
+    })
 
     
-
-    if (bug.position.x <= player.position.x + player.width
-        && bug.position.x + bug.width >= player.position.x
-        && bug.position.y + bug.height >= player.position.y
-        && bug.position.y <= player.position.y + player.height) {
-            if(player.position.x <= bug.position.x + bug.width / 2) {
-                player.isInFront = true;
-                player.pushBack();
-            } else if (player.position.x > bug.position.x + bug.width / 2) {
-                player.isInFront = false;
-                player.pushBack();
-            }
-        if (bugHit) {
-            console.log('bug hit');
-            bugHit = false;
-        }
-    } else {
-        bugHit = true;
-    }
+    
+    
     
 }
 
@@ -213,7 +238,10 @@ function animate() {
 animate();
 
 //====== Helper functions ======
-
+function randomIndex(array) {
+    const index = Math.floor(Math.random() * array.length);
+    return array[index];
+}
 
 //====== EVENT LISTENER ======
 
