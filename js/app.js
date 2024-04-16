@@ -17,10 +17,6 @@ const input = {
     }
 }
 let prevKey;
-let bugHit = true;
-const turretBtn1 = document.getElementById('buy-turret-1');
-const turretBtn2 = document.getElementById('buy-turret-2');
-const turretBtn3 = document.getElementById('buy-turret-3');
 const bgi = document.getElementById('backgroundImg');
 const ctx = game.getContext('2d');
 
@@ -130,20 +126,6 @@ const player = new Player({
     }
 });
 
-
-
-/* const bug = new Bug({
-    position: {
-        x: 800,
-        y: 300
-    },
-    velocity: {
-        x: 0,
-        y: 0
-    },
-}); */
-
-
 //====== enemy spawn ======
 
 const bugSpawnY = [275, 325, 375, 425, 475, 525];
@@ -153,17 +135,19 @@ for (i = 0; i < 10; i++) {
 }
 
 //====== create animation function ======
+//setting up for throttling
 let lastBugSpawn = Date.now();
+let lastHitTakenTime = 0;
 let bugCount = 0;
+let bugKill = 0;
 
 function animate() {
-    window.requestAnimationFrame(animate);
+    const animation = requestAnimationFrame(animate);
     ctx.drawImage(bgi, 0, 0);
     //console.log('move');
 
     let now = Date.now();
     player.update();
-    //bug.update();
     if (now - lastBugSpawn > 2000 && bugCount < 10) {
         bugArr.push(new Bug({
             position: {
@@ -185,7 +169,6 @@ function animate() {
 
     player.velocity.y = 0;
     player.velocity.x = 0;
-    //bug.velocity.x = -1;
     //movement
     if (input.w.down && prevKey === 'w') {
         player.velocity.y = -3;
@@ -212,6 +195,7 @@ function animate() {
                 //despawn bug
                 if (bug.hp === 0) {
                     bugArr.splice(bugArr.indexOf(bug), 1);
+                    bugKill++;
                 }
         }
 
@@ -227,21 +211,24 @@ function animate() {
                     player.isInFront = false;
                     player.pushBack();
                 }
-            if (bugHit) {
+            if (now - lastHitTakenTime > 200) {
                 console.log(bugArr.indexOf(bug), 'bug hit');
-                bugHit = false;
                 player.hp -= 1;
-                console.log('player health:', player.hp)
+                console.log('player health:', player.hp);
+                lastHitTakenTime = now;
             }
-        } else {
-            bugHit = true;
         }
     })
 
-    
-    
-    
-    
+    console.log(player.hp);
+
+    if (bugKill === 10) {
+        cancelAnimationFrame(animation);
+        document.getElementById('you-win').style.display = 'flex';
+    } else if (player.hp === 0) {
+        cancelAnimationFrame(animation);
+        document.getElementById('game-over').style.display = 'flex';
+    }
 }
 
 
