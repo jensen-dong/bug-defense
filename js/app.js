@@ -72,6 +72,7 @@ class Player extends Sprite {
         }
         this.attacking;
         this.isInFront;
+        this.hp = 10;
     }
 
     draw() {
@@ -113,6 +114,7 @@ class Bug extends Sprite {
         super(options);
         this.color = 'green';
         this.height = 50;
+        this.hp = 3;
     }
 }
 
@@ -165,11 +167,11 @@ function animate() {
     if (now - lastBugSpawn > 2000 && bugCount < 10) {
         bugArr.push(new Bug({
             position: {
-                x: 1000,
+                x: 1280,
                 y: randomIndex(bugSpawnY)
             },
             velocity: {
-                x: -1,
+                x: -.5,
                 y: 0
             }
         }))
@@ -205,6 +207,12 @@ function animate() {
             ) {
                 player.attacking = false;
                 console.log('player hit', bugArr.indexOf(bug));
+                bug.hp -= 1;
+                console.log('bug number', bugArr.indexOf(bug), ' health:', bug.hp);
+                //despawn bug
+                if (bug.hp === 0) {
+                    bugArr.splice(bugArr.indexOf(bug), 1);
+                }
         }
 
         //push back detection
@@ -220,8 +228,10 @@ function animate() {
                     player.pushBack();
                 }
             if (bugHit) {
-                console.log('bug hit');
+                console.log(bugArr.indexOf(bug), 'bug hit');
                 bugHit = false;
+                player.hp -= 1;
+                console.log('player health:', player.hp)
             }
         } else {
             bugHit = true;
