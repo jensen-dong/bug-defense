@@ -182,7 +182,10 @@ class Player extends Sprite {
     switchState(sprite) {
         if (this.image === this.sprites.attack.image && this.currentFrame < this.sprites.attack.maxFrame -1) {
             return;
-        }
+        };
+        if (this.image === this.sprites.takeHit.image && this.currentFrame < this.sprites.takeHit.maxFrame - 1) {
+            return;
+        };
         switch (sprite) {
             case 'idle' :
                 if(this.image !== this.sprites.idle.image) {
@@ -240,7 +243,7 @@ class Bug extends Sprite {
         this.hp = 3;
         this.currentFrame = 0;
         this.elapsedFrame = 0;
-        this.holdFrame = 10;
+        this.holdFrame = 5;
     }
 
     update() {
