@@ -49,6 +49,10 @@ class Sprite {
     }
 
     draw() {
+        /* if (!this.image.complete || this.image.naturalWidth === 0) {
+            console.log("Image not loaded");
+            return; 
+        } */
         /* ctx.fillStyle = this.color;
         ctx.fillRect(this.position.x, this.position.y, this.width, this.height); */
         ctx.drawImage(
@@ -99,7 +103,9 @@ class Player extends Sprite {
         maxFrame = 1,
         offset = { x: 0, y: 0 },
         sprites, 
+
         attackPosition = { offset: {}, width: undefined, height: undefined }
+
       }) {
         super({
           position,
@@ -112,6 +118,7 @@ class Player extends Sprite {
         this.velocity = velocity;
         this.width = 50;
         this.height = 150;
+        
         this.lastKey;
         this.attackPosition = {
           position: {
@@ -122,6 +129,7 @@ class Player extends Sprite {
           width: attackPosition.width,
           height: attackPosition.height
         };
+
         this.color = color;
         this.isAttacking;
         this.hp = 10;
@@ -136,21 +144,6 @@ class Player extends Sprite {
           sprites[sprite].image.src = sprites[sprite].imgSrc;
         }
       }
-
-    /* draw() {
-        super.draw();
-
-        //attack position
-        if (this.attacking) {
-            ctx.fillStyle = this.color;
-            ctx.fillRect(
-                this.attackPosition.position.x,
-                this.attackPosition.position.y,
-                this.attackPosition.width,
-                this.attackPosition.height
-            )
-        }
-    } */
 
     update() {
         this.draw();
@@ -187,6 +180,9 @@ class Player extends Sprite {
     }
 
     switchState(sprite) {
+        if (this.image === this.sprites.attack.image && this.currentFrame < this.sprites.attack.maxFrame -1) {
+            return;
+        }
         switch (sprite) {
             case 'idle' :
                 if(this.image !== this.sprites.idle.image) {
@@ -221,12 +217,39 @@ class Player extends Sprite {
 }
 
 class Bug extends Sprite {
-    constructor(options) {
-        super(options);
-        this.color = 'green';
+    constructor({
+        position,
+        velocity,
+        color = 'green',
+        imgSrc,
+        scale = 1,
+        maxFrame = 1,
+        offset = { x: 0, y: 0 },
+    }) {
+        super({
+            position,
+            imgSrc,
+            scale,
+            maxFrame,
+            offset
+        });
+        this.velocity = velocity;
+        this.color = color;
+        this.width = 50;
         this.height = 50;
         this.hp = 3;
+        this.currentFrame = 0;
+        this.elapsedFrame = 0;
+        this.holdFrame = 10;
     }
+
+    update() {
+        this.draw();
+        this.frameCheck();
+
+        this.position.x += this.velocity.x;
+        this.position.y += this.velocity.y;
+    };
 }
 
 
@@ -261,7 +284,7 @@ const player = new Player({
             maxFrame: 8,
         },
         attack: {
-            imgSrc: './resources/player/Attack2.png',
+            imgSrc: './resources/player/Attack1.png',
             maxFrame: 6,
         },
         takeHit: {
@@ -279,6 +302,25 @@ const player = new Player({
     }
 });
 
+/* const bug = new Bug({
+    position: {
+        x: 1280,
+        y: 400,
+    },
+    velocity: {
+        x: -1,
+        y: 0
+    },
+    offset: {
+        x: 0,
+        y: 0
+    },
+    imgSrc: './resources/bug/Walk.png',
+    maxFrame: 4,
+    scale: 4,
+    
+}) */
+
 //====== enemy spawn ======
 
 const bugSpawnY = [275, 325, 375, 425, 475, 525];
@@ -293,6 +335,7 @@ let lastBugSpawn = Date.now();
 let lastHitTakenTime = 0;
 let bugCount = 0;
 let bugKill = 0;
+//let startBugUpdates = null;
 
 function animate() {
     const animation = requestAnimationFrame(animate);
@@ -300,8 +343,15 @@ function animate() {
     //console.log('move');
 
     let now = Date.now();
+
+    /* if (!startBugUpdates) {
+        startBugUpdates = now + 2200;
+    } */
+    
     player.update();
-    if (now - lastBugSpawn > 2000 && bugCount < 10) {
+    /* bug.update();
+    console.log(bug.image); */
+    if (now - lastBugSpawn > 2000 && bugCount < 11) {
         bugArr.push(new Bug({
             position: {
                 x: 1280,
@@ -311,8 +361,14 @@ function animate() {
                 x: -1,
                 y: 0
             },
+            offset: {
+                x: 10,
+                y: 10
+            },
             imgSrc: './resources/bug/Walk.png',
-            maxFrame: 9
+            maxFrame: 4,
+            scale: 2,
+             
         }))
         lastBugSpawn = now;
         bugCount++;
@@ -320,7 +376,12 @@ function animate() {
 
     bugArr.forEach(bug => {
         bug.update();
-    })
+    });
+    /* if (now > startBugUpdates) {
+        bugArr.forEach(bug => {
+            bug.update();
+        });
+    } */
 
     player.velocity.y = 0;
     player.velocity.x = 0;
@@ -375,17 +436,18 @@ function animate() {
                 player.pushBack();
             }
             if (now - lastHitTakenTime > 200) {
-                console.log(bugArr.indexOf(bug), 'bug hit');
+                //console.log(bugArr.indexOf(bug), 'bug hit');
+                player.switchState('takeHit');
                 player.hp -= 1;
                 health--;
                 document.getElementById('health').innerHTML = health;
-                console.log('player health:', player.hp);
+                //console.log('player health:', player.hp);
                 lastHitTakenTime = now;
             }
         }
     })
 
-    console.log(player.hp);
+    //console.log(player.hp);
 
     if (bugKill === 10) {
         cancelAnimationFrame(animation);
