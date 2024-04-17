@@ -295,31 +295,13 @@ const player = new Player({
     attackPosition: {
         offset: {
             x: 100,
-            y: 50
+            y: 0
         },
         width: 160, 
-        height: 50
+        height: 100
     }
 });
 
-/* const bug = new Bug({
-    position: {
-        x: 1280,
-        y: 400,
-    },
-    velocity: {
-        x: -1,
-        y: 0
-    },
-    offset: {
-        x: 0,
-        y: 0
-    },
-    imgSrc: './resources/bug/Walk.png',
-    maxFrame: 4,
-    scale: 4,
-    
-}) */
 
 //====== enemy spawn ======
 
@@ -335,7 +317,6 @@ let lastBugSpawn = Date.now();
 let lastHitTakenTime = 0;
 let bugCount = 0;
 let bugKill = 0;
-//let startBugUpdates = null;
 
 function animate() {
     const animation = requestAnimationFrame(animate);
@@ -344,14 +325,11 @@ function animate() {
 
     let now = Date.now();
 
-    /* if (!startBugUpdates) {
-        startBugUpdates = now + 2200;
-    } */
     
     player.update();
-    /* bug.update();
-    console.log(bug.image); */
-    if (now - lastBugSpawn > 2000 && bugCount < 11) {
+
+    //set bug spawn limit
+    if (now - lastBugSpawn > 2000 && bugCount < 15) {
         bugArr.push(new Bug({
             position: {
                 x: 1280,
@@ -444,6 +422,13 @@ function animate() {
                 //console.log('player health:', player.hp);
                 lastHitTakenTime = now;
             }
+        }
+        //bug reaching end of screen
+        if (bug.position.x === 0) {
+            player.hp -= 1;
+            health--;
+            document.getElementById('health').innerHTML = health;
+            bugArr.splice(bugArr.indexOf(bug), 1);
         }
     })
 
