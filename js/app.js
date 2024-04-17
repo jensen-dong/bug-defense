@@ -27,53 +27,120 @@ game.height = 720;
 ctx.drawImage(bgi, 0, 0);
 
 
-//====== CRAWLER CLASS ======
+//====== CLASSES ======
 class Sprite {
-    constructor({ position, velocity }) {
+    constructor({ position, velocity, imgSrc, scale = 1, maxFrame = 1, offset = {x: 0, y: 0} }) {
         this.position = position;
         this.velocity = velocity;
         this.height = 150;
         this.width = 50;
+        this.image = new Image();
+        this.image.src = imgSrc;
+        this.scale = scale;
+        this.maxFrame = maxFrame;
+        this.currentFrame = 0;
+        this.elapsedFrame = 0;
+        this.holdFrame = 5;
+        this.offset = offset;
 
         this.color = 'red';
         this.attacking;
-        this.isInFront;
+        
     }
 
     draw() {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+        /* ctx.fillStyle = this.color;
+        ctx.fillRect(this.position.x, this.position.y, this.width, this.height); */
+        ctx.drawImage(
+            this.image, 
+            (this.image.width / this.maxFrame) * this.currentFrame,
+            0,
+            this.image.width / this.maxFrame,
+            this.image.height,
+            this.position.x - this.offset.x, 
+            this.position.y - this.offset.y, 
+            (this.image.width / this.maxFrame) * this.scale, 
+            this.image.height * this.scale
+        )
+    }
+    frameCheck() {
+        this.elapsedFrame++;
+        if (this.elapsedFrame % this.holdFrame === 0) {
+            if (this.currentFrame < this.maxFrame - 1) {
+                this.currentFrame++;
+            } else {
+                this.currentFrame = 0;
+            }
+        }
     }
 
     update() {
         this.draw();
-        this.position.x += this.velocity.x;
+        this.frameCheck();
+        
+        /* this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
 
         if (this.position.y + this.height + this.velocity.y >= game.height) {
             this.velocity.y = 0;
-        }
+        } */
     }
 
-    
+
 }
 
 class Player extends Sprite {
-    constructor(options) {
-        super(options);
+    constructor({
+        position,
+        velocity,
+        color = 'red',
+        imgSrc,
+        scale = 1,
+        maxFrame = 1,
+        offset = { x: 0, y: 0 },
+        sprites, 
+        attackPosition = { offset: {}, width: undefined, height: undefined }
+      }) {
+        super({
+          position,
+          imgSrc,
+          scale,
+          maxFrame,
+          offset
+        })
+    
+        this.velocity = velocity;
+        this.width = 50;
+        this.height = 150;
+        this.lastKey;
         this.attackPosition = {
-            position: this.position,
-            width: 150,
-            height: 50,
-        }
-        this.attacking;
-        this.isInFront;
+          position: {
+            x: this.position.x,
+            y: this.position.y
+          },
+          offset: attackPosition.offset,
+          width: attackPosition.width,
+          height: attackPosition.height
+        };
+        this.color = color;
+        this.isAttacking;
         this.hp = 10;
-    }
+        this.currentFrame = 0;
+        this.elapsedFrame = 0;
+        this.holdFrame = 10;
+        this.sprites = sprites;
+        this.dead = false;
+        this.isInFront;
+    
+        for (const sprite in this.sprites) {
+          sprites[sprite].image = new Image()
+          sprites[sprite].image.src = sprites[sprite].imageSrc
+        }
+      }
 
-    draw() {
+    /* draw() {
         super.draw();
-        
+
         //attack position
         if (this.attacking) {
             ctx.fillStyle = this.color;
@@ -84,7 +151,22 @@ class Player extends Sprite {
                 this.attackPosition.height
             )
         }
+    } */
+
+    update() {
+        this.draw();
+        this.frameCheck();
+
+        this.attackPosition.position.x = this.position.x + this.attackPosition.offset.x;
+        this.attackPosition.position.y = this.position.y + this.attackPosition.offset.y;
+        this.position.x += this.velocity.x;
+        this.position.y += this.velocity.y;
+
+        if (this.position.y + this.height + this.velocity.y >= game.height) {
+            this.velocity.y = 0;
+        }
     }
+
     attack() {
         this.attacking = true;
         setTimeout(() => {
@@ -122,7 +204,19 @@ const player = new Player({
     },
     velocity: {
         x: 0,
-        y: 10
+        y: 0
+    },
+    offset :{
+        x: -50,
+        y: 0
+    },
+
+    imgSrc: './resources/player/idle.png',
+    maxFrame: 4,
+    scale: 2.5, 
+    offset: {
+        x: 215, 
+        y: 167
     }
 });
 
@@ -131,7 +225,7 @@ const player = new Player({
 const bugSpawnY = [275, 325, 375, 425, 475, 525];
 const bugArr = [];
 for (i = 0; i < 10; i++) {
-    
+
 }
 
 //====== create animation function ======
@@ -157,7 +251,9 @@ function animate() {
             velocity: {
                 x: -1,
                 y: 0
-            }
+            },
+            imgSrc: './resources/bug/Walk.png',
+            maxFrame: 9
         }))
         lastBugSpawn = now;
         bugCount++;
@@ -182,23 +278,23 @@ function animate() {
 
     //hit detection
     bugArr.forEach(bug => {
-        if (player.attackPosition.position.x + player.attackPosition.width >= bug.position.x 
+        if (player.attackPosition.position.x + player.attackPosition.width >= bug.position.x
             && player.attackPosition.position.x <= bug.position.x + bug.width
             && player.attackPosition.position.y + player.attackPosition.height >= bug.position.y
             && player.attackPosition.position.y <= bug.position.y + bug.height
             && player.attacking
-            ) {
-                player.attacking = false;
-                console.log('player hit', bugArr.indexOf(bug));
-                bug.hp -= 1;
-                console.log('bug number', bugArr.indexOf(bug), ' health:', bug.hp);
-                //despawn bug
-                if (bug.hp === 0) {
-                    bugArr.splice(bugArr.indexOf(bug), 1);
-                    bugKill++;
-                    score++;
-                    document.getElementById('score').innerHTML = score;
-                }
+        ) {
+            player.attacking = false;
+            console.log('player hit', bugArr.indexOf(bug));
+            bug.hp -= 1;
+            console.log('bug number', bugArr.indexOf(bug), ' health:', bug.hp);
+            //despawn bug
+            if (bug.hp === 0) {
+                bugArr.splice(bugArr.indexOf(bug), 1);
+                bugKill++;
+                score++;
+                document.getElementById('score').innerHTML = score;
+            }
         }
 
         //push back detection
@@ -206,13 +302,13 @@ function animate() {
             && bug.position.x + bug.width >= player.position.x
             && bug.position.y + bug.height >= player.position.y
             && bug.position.y <= player.position.y + player.height) {
-                if(player.position.x <= bug.position.x + bug.width / 2) {
-                    player.isInFront = true;
-                    player.pushBack();
-                } else if (player.position.x > bug.position.x + bug.width / 2) {
-                    player.isInFront = false;
-                    player.pushBack();
-                }
+            if (player.position.x <= bug.position.x + bug.width / 2) {
+                player.isInFront = true;
+                player.pushBack();
+            } else if (player.position.x > bug.position.x + bug.width / 2) {
+                player.isInFront = false;
+                player.pushBack();
+            }
             if (now - lastHitTakenTime > 200) {
                 console.log(bugArr.indexOf(bug), 'bug hit');
                 player.hp -= 1;
@@ -291,8 +387,6 @@ window.addEventListener('keyup', (event) => {
 
 console.log(game.height);
 console.log(game.width);
-
-
 
 
 //====== COORDINATE FUNCTION ***TESTING ONLY*** ======
