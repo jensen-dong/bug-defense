@@ -129,12 +129,11 @@ class Player extends Sprite {
         this.elapsedFrame = 0;
         this.holdFrame = 10;
         this.sprites = sprites;
-        this.dead = false;
         this.isInFront;
     
         for (const sprite in this.sprites) {
-          sprites[sprite].image = new Image()
-          sprites[sprite].image.src = sprites[sprite].imageSrc
+          sprites[sprite].image = new Image();
+          sprites[sprite].image.src = sprites[sprite].imgSrc;
         }
       }
 
@@ -169,6 +168,7 @@ class Player extends Sprite {
 
     attack() {
         this.attacking = true;
+        this.switchState('attack');
         setTimeout(() => {
             this.attacking = false
         }, 100)
@@ -183,6 +183,39 @@ class Player extends Sprite {
             setTimeout(() => {
                 this.velocity.x = 10
             }, 50)
+        }
+    }
+
+    switchState(sprite) {
+        switch (sprite) {
+            case 'idle' :
+                if(this.image !== this.sprites.idle.image) {
+                    this.image = this.sprites.idle.image;
+                    this.maxFrame = this.sprites.idle.maxFrame;
+                    this.frameCurrent = 0;
+                }
+                break;
+            case 'run' :
+                if(this.image !== this.sprites.run.image) {
+                    this.image = this.sprites.run.image;
+                    this.maxFrame = this.sprites.run.maxFrame;
+                    this.frameCurrent = 0;
+                }
+                break;
+            case 'attack' :
+                if(this.image !== this.sprites.attack.image) {
+                    this.image = this.sprites.attack.image;
+                    this.maxFrame = this.sprites.attack.maxFrame;
+                    this.frameCurrent = 0;
+                }
+                break;
+            case 'takeHit' :
+                if(this.image !== this.sprites.takeHit.image) {
+                    this.image = this.sprites.takeHit.image;
+                    this.maxFrame = this.sprites.takeHit.maxFrame;
+                    this.frameCurrent = 0;
+                }
+                break;
         }
     }
 }
@@ -207,16 +240,42 @@ const player = new Player({
         y: 0
     },
     offset :{
-        x: -50,
+        x: 0,
         y: 0
     },
 
     imgSrc: './resources/player/idle.png',
-    maxFrame: 4,
+    maxFrame: 8,
     scale: 2.5, 
     offset: {
         x: 215, 
         y: 167
+    },
+    sprites: {
+        idle: {
+            imgSrc: './resources/player/idle.png',
+            maxFrame: 8,
+        },
+        run: {
+            imgSrc: './resources/player/Run.png',
+            maxFrame: 8,
+        },
+        attack: {
+            imgSrc: './resources/player/Attack2.png',
+            maxFrame: 6,
+        },
+        takeHit: {
+            imgSrc: './resources/player/Take Hit - white silhouette.png',
+            maxFrame: 4,
+        }
+    }, 
+    attackPosition: {
+        offset: {
+            x: 100,
+            y: 50
+        },
+        width: 160, 
+        height: 50
     }
 });
 
@@ -266,14 +325,20 @@ function animate() {
     player.velocity.y = 0;
     player.velocity.x = 0;
     //movement
+    //default animation
+    player.switchState('idle');
     if (input.w.down && prevKey === 'w') {
         player.velocity.y = -3;
+        player.switchState('run');
     } else if (input.s.down && prevKey === 's') {
         player.velocity.y = 3;
+        player.switchState('run');
     } else if (input.a.down && prevKey === 'a') {
         player.velocity.x = -3;
+        player.switchState('run');
     } else if (input.d.down && prevKey === 'd') {
         player.velocity.x = 3;
+        player.switchState('run');
     }
 
     //hit detection
