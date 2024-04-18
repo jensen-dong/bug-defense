@@ -36,11 +36,17 @@ class Sprite {
         this.width = 50;
         this.image = new Image();
         this.image.src = imgSrc;
+        //scale variable to suit different resource sizing
         this.scale = scale;
+        //set maximum frame to correctly loop animations
         this.maxFrame = maxFrame;
+        //check for current frame position
         this.currentFrame = 0;
+        //check for how many frame has elapsed
         this.elapsedFrame = 0;
+        //set animation loop speed
         this.holdFrame = 5;
+        //offset to account for transparent padding in resource imgs
         this.offset = offset;
 
         this.color = 'red';
@@ -67,6 +73,8 @@ class Sprite {
             this.image.height * this.scale
         )
     }
+
+    //function to slow down animation and check for targetted fps
     frameCheck() {
         this.elapsedFrame++;
         if (this.elapsedFrame % this.holdFrame === 0) {
@@ -138,7 +146,8 @@ class Player extends Sprite {
         this.holdFrame = 10;
         this.sprites = sprites;
         this.isInFront;
-    
+        
+        //prep for switch case function, assign attribute to sprites
         for (const sprite in this.sprites) {
           sprites[sprite].image = new Image();
           sprites[sprite].image.src = sprites[sprite].imgSrc;
@@ -149,8 +158,11 @@ class Player extends Sprite {
         this.draw();
         this.frameCheck();
 
+        //hitbox logic
         this.attackPosition.position.x = this.position.x + this.attackPosition.offset.x;
         this.attackPosition.position.y = this.position.y + this.attackPosition.offset.y;
+        
+        //velocity logic
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
 
@@ -159,6 +171,7 @@ class Player extends Sprite {
         }
     }
 
+    //attack method for attack input
     attack() {
         this.attacking = true;
         this.switchState('attack');
@@ -167,6 +180,7 @@ class Player extends Sprite {
         }, 100)
     }
 
+    //push back method for player collision detection
     pushBack() {
         if (this.isInFront) {
             setTimeout(() => {
@@ -179,6 +193,7 @@ class Player extends Sprite {
         }
     }
 
+    //switch state function to switch to different animation set
     switchState(sprite) {
         if (this.image === this.sprites.attack.image && this.currentFrame < this.sprites.attack.maxFrame -1) {
             return;
