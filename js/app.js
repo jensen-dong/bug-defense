@@ -407,9 +407,9 @@ function animate() {
             && player.attacking
         ) {
             player.attacking = false;
-            console.log('player hit', bugArr.indexOf(bug));
+            //console.log('player hit', bugArr.indexOf(bug));
             bug.hp -= 1;
-            console.log('bug number', bugArr.indexOf(bug), ' health:', bug.hp);
+            //console.log('bug number', bugArr.indexOf(bug), ' health:', bug.hp);
             //despawn bug
             if (bug.hp === 0) {
                 bugArr.splice(bugArr.indexOf(bug), 1);
@@ -473,7 +473,7 @@ function randomIndex(array) {
 //====== EVENT LISTENER ======
 
 window.addEventListener('keydown', (event) => {
-    console.log(event.key);
+    //console.log(event.key);
     switch (event.key) {
         case 'w':
             input.w.down = true;
@@ -515,8 +515,8 @@ window.addEventListener('keyup', (event) => {
 });
 
 
-console.log(game.height);
-console.log(game.width);
+//console.log(game.height);
+//console.log(game.width);
 
 
 //====== COORDINATE FUNCTION ***TESTING ONLY*** ======
